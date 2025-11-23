@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Study Planner AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #0f172a; /* dark blue */
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .app-container {
+      max-width: 900px;
+      width: 100%;
+      background: #020617;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      border: 1px solid #1f2937;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 5px;
+      font-size: 1.8rem;
+    }
+
+    h1 span {
+      color: #38bdf8;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: #d1d5db;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    input, select, button, textarea {
+      border-radius: 8px;
+      border: 1px solid #374151;
+      padding: 8px 10px;
+      width: 100%;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.9rem;
+    }
+
+    input:focus, select:focus, button:focus, textarea:focus {
+      outline: none;
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px #38bdf8;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: #38bdf8;
+      color: #0f172a;
+      font-weight: 600;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(56, 189, 248, 0.35);
+      background: #0ea5e9;
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #1f2937;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.6);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      padding: 6px 8px;
+      text-align: left;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    th {
+      font-weight: 600;
+      color: #9ca3af;
+      background: #020617;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0f172a;
+      color: #9ca3af;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      margin-right: 6px;
+    }
+
+    .tag-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #38bdf8;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      margin-bottom: 6px;
+      color: #e5e7eb;
+    }
+
+    .section-subtitle {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    .results {
+      margin-top: 10px;
+    }
+
+    .error {
+      color: #fca5a5;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    .day-block {
+      margin-bottom: 10px;
+      background: #020617;
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+      padding: 8px 10px;
+    }
+
+    .day-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #e5e7eb;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      font-size: 0.75rem;
+      color: #6b7280;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .app-container {
+        padding: 14px;
+      }
+
+      h1 {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <h1>Study Planner <span>AI</span></h1>
+    <p class="subtitle">Heuristic-based planner that allocates your study time smartly across subjects.</p>
+
+    <div class="card">
+      <div class="grid">
+        <div>
+          <label for="daysLeft">Days left for exam(s)</label>
+          <input type="number" id="daysLeft" min="1" max="365" placeholder="e.g., 10" />
+        </div>
+        <div>
+          <label for="hoursPerDay">Hours you can study per day</label>
+          <input type="number" id="hoursPerDay" min="1" step="0.5" placeholder="e.g., 4.5" />
+        </div>
+      </div>
+
+      <div class="section-title">Subjects</div>
+      <div class="section-subtitle">
+        Add each subject and rate difficulty, your weakness, and exam importance (1 = low, 5 = high).
+      </div>
+
+      <div style="margin-bottom: 8px;">
+        <button id="addSubjectBtn" class="btn-secondary" type="button">+ Add Subject</button>
+      </div>
+
+      <div id="subjectsContainer">
+        <table id="subjectsTable">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Difficulty (1–5)</th>
+              <th>Weakness (1–5)</th>
+              <th>Importance (1–5)</th>
+              <th>Remove</th>
+            </tr>
+          </thead>
+          <tbody id="subjectsBody">
+            <!-- Subject rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top: 14px; text-align: right;">
+        <button id="generateBtn" type="button">Generate Study Plan</button>
+      </div>
+      <div id="errorBox" class="error" style="display: none;"></div>
+    </div>
+
+    <div class="card results">
+      <div class="section-title">Plan Summary</div>
+      <div class="section-subtitle">
+        Based on a weighted priority:
+        <span class="tag"><span class="tag-dot"></span>40% Difficulty · 40% Weakness · 20% Importance</span>
+      </div>
+      <div id="summaryArea">
+        <!-- Summary table goes here -->
+      </div>
+    </div>
+
+    <div class="card results">
+      <div class="section-title">Day-wise Plan</div>
+      <div class="section-subtitle">
+        Same distribution each day (simple version). You can manually reshuffle later if needed.
+      </div>
+      <div id="dayPlanArea">
+        <!-- Day-wise plan goes here -->
+      </div>
+    </div>
+
+    <p class="footer-note">
+      Built as a beginner-friendly AI-style project using only HTML, CSS, and JavaScript.
+    </p>
+  </div>
+
+  <script>
+    // ---------- Utility Functions ----------
+
+    function showError(message) {
+      const box = document.getElementById("errorBox");
+      box.textContent = message;
+      box.style.display = "block";
+    }
+
+    function clearError() {
+      const box = document.getElementById("errorBox");
+      box.textContent = "";
+      box.style.display = "none";
+    }
+
+    // ---------- Subject Row Handling ----------
+
+    function createSubjectRow(nameValue = "") {
+      const tbody = document.getElementById("subjectsBody");
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>
+          <input type="text" class="sub-name" placeholder="e.g., Java, ADA" value="${nameValue}" />
+        </td>
+        <td>
+          <input type="number" class="sub-difficulty" min="1" max="5" placeholder="3" />
+        </td>
+        <td>
+          <input type="number" class="sub-weakness" min="1" max="5" placeholder="4" />
+        </td>
+        <td>
+          <input type="number" class="sub-importance" min="1" max="5" placeholder="3" />
+        </td>
+        <td>
+          <button type="button" class="btn-secondary btn-remove">✕</button>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+
+      const removeBtn = tr.querySelector(".btn-remove");
+      removeBtn.addEventListener("click", () => {
+        tr.remove();
+      });
+    }
+
+    function getSubjectsFromTable() {
+      const rows = document.querySelectorAll("#subjectsBody tr");
+      const subjects = [];
+
+      rows.forEach((row, index) => {
+        const nameInput = row.querySelector(".sub-name");
+        const diffInput = row.querySelector(".sub-difficulty");
+        const weakInput = row.querySelector(".sub-weakness");
+        const impInput = row.querySelector(".sub-importance");
+
+        const rawName = (nameInput.value || "").trim();
+        const name = rawName || `Subject ${index + 1}`;
+        const difficulty = Number(diffInput.value);
+        const weakness = Number(weakInput.value);
+        const importance = Number(impInput.value);
+
+        subjects.push({
+          name,
+          difficulty,
+          weakness,
+          importance
+        });
+      });
+
+      return subjects;
+    }
+
+    // ---------- Core Logic (same as Python version) ----------
+
+    function computePriorities(subjects) {
+      subjects.forEach((s) => {
+        const d = s.difficulty;
+        const w = s.weakness;
+        const imp = s.importance;
+        s.priority = 0.4 * d + 0.4 * w + 0.2 * imp;
+      });
+    }
+
+    function distributeHours(subjects, daysLeft, hoursPerDay) {
+      const totalHours = daysLeft * hoursPerDay;
+      const totalPriority = subjects.reduce((sum, s) => sum + s.priority, 0);
+
+      if (totalPriority === 0) {
+        return;
+      }
+
+      subjects.forEach((s) => {
+        const share = s.priority / totalPriority;
+        s.totalHours = Math.round(totalHours * share * 10) / 10; // 1 decimal
+        s.hoursPerDay = Math.round((s.totalHours / daysLeft) * 10) / 10;
+      });
+    }
+
+    // ---------- Rendering ----------
+
+    function renderSummary(subjects, daysLeft, hoursPerDay) {
+      const summaryArea = document.getElementById("summaryArea");
+
+      if (subjects.length === 0) {
+        summaryArea.innerHTML = "<p style='font-size:0.85rem;color:#6b7280;'>No subjects yet. Add at least one subject to see the summary.</p>";
+        return;
+      }
+
+      const totalHours = daysLeft * hoursPerDay || 0;
+
+      let html = `
+        <p style="font-size:0.85rem;color:#9ca3af;margin-bottom:8px;">
+          Days left: <strong>${daysLeft}</strong> · Hours per day: <strong>${hoursPerDay}</strong> · Total study hours: <strong>${totalHours.toFixed(
+            1
+          )}</strong>
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Priority</th>
+              <th>Total Hours</th>
+              <th>Hours / Day</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      subjects.forEach((s) => {
+        html += `
+          <tr>
+            <td>${s.name}</td>
+            <td>${s.priority.toFixed(2)}</td>
+            <td>${(s.totalHours || 0).toFixed(1)}</td>
+            <td>${(s.hoursPerDay || 0).toFixed(1)}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      summaryArea.innerHTML = html;
+    }
+
+    function renderDayPlan(subjects, daysLeft) {
+      const dayPlanArea = document.getElementById("dayPlanArea");
+
+      if (subjects.length === 0 || !daysLeft) {
+        dayPlanArea.innerHTML = "<p style='font-size:0.85rem;color:#6b7280;'>Generate a plan to see day-wise schedule.</p>";
+        return;
+      }
+
+      let html = "";
+
+      for (let day = 1; day <= daysLeft; day++) {
+        html += `<div class="day-block">
+          <div class="day-title">Day ${day}</div>
+        `;
+
+        subjects.forEach((s) => {
+          if (s.hoursPerDay && s.hoursPerDay > 0) {
+            html += `<div style="font-size:0.85rem;color:#d1d5db;">• ${s.name}: <strong>${s.hoursPerDay.toFixed(
+              1
+            )}</strong> hour(s)</div>`;
+          }
+        });
+
+        html += `</div>`;
+      }
+
+      dayPlanArea.innerHTML = html;
+    }
+
+    // ---------- Main Button Handler ----------
+
+    function generatePlan() {
+      clearError();
+
+      const daysLeftInput = document.getElementById("daysLeft");
+      const hoursPerDayInput = document.getElementById("hoursPerDay");
+
+      const daysLeft = Number(daysLeftInput.value);
+      const hoursPerDay = Number(hoursPerDayInput.value);
+
+      if (!daysLeft || daysLeft <= 0) {
+        showError("Please enter a valid number of days left (at least 1).");
+        return;
+      }
+
+      if (!hoursPerDay || hoursPerDay <= 0) {
+        showError("Please enter how many hours you can study per day (greater than 0).");
+        return;
+      }
+
+      const subjects = getSubjectsFromTable();
+
+      if (subjects.length === 0) {
+        showError("Please add at least one subject.");
+        return;
+      }
+
+      // Validate each subject's ratings
+      for (const s of subjects) {
+        if (
+          !s.difficulty || s.difficulty < 1 || s.difficulty > 5 ||
+          !s.weakness || s.weakness < 1 || s.weakness > 5 ||
+          !s.importance || s.importance < 1 || s.importance > 5
+        ) {
+          showError("All ratings (difficulty, weakness, importance) must be between 1 and 5 for every subject.");
+          return;
+        }
+      }
+
+      computePriorities(subjects);
+      distributeHours(subjects, daysLeft, hoursPerDay);
+
+      renderSummary(subjects, daysLeft, hoursPerDay);
+      renderDayPlan(subjects, daysLeft);
+    }
+
+    // ---------- Init ----------
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Add 3 default subject rows for convenience
+      createSubjectRow("Java");
+      createSubjectRow("ADA");
+      createSubjectRow("AI");
+
+      document.getElementById("addSubjectBtn").addEventListener("click", () => {
+        createSubjectRow("");
+      });
+
+      document.getElementById("generateBtn").addEventListener("click", generatePlan);
+
+      renderSummary([], 0, 0);
+      renderDayPlan([], 0);
+    });
+  </script>
+</body>
+</html>
+  
