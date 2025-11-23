@@ -2,740 +2,806 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Study Planner AI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Particles.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-
+  <title>Study Planner AI – Siva Sai</title>
   <style>
+    :root {
+      --bg1: #090b28;
+      --bg2: #151a3c;
+      --accent: #7f5dff;
+      --accent-soft: rgba(127, 93, 255, 0.25);
+      --accent-strong: #ff8bd5;
+      --card: rgba(10, 12, 40, 0.9);
+      --text: #f9fbff;
+      --text-soft: #c5c9ff;
+      --danger: #ff4f6b;
+      --radius-xl: 20px;
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.45);
+    }
+
     * {
       box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
     }
 
     body {
-      margin: 0;
       min-height: 100vh;
+      color: var(--text);
+      background: radial-gradient(circle at top, #292a7a, #050418 55%, #02010a);
       display: flex;
       justify-content: center;
-      padding: 20px 10px;
-      color: #e5e7eb;
-      background: radial-gradient(circle at top left, #38bdf8 0, transparent 55%),
-                  radial-gradient(circle at bottom right, #a855f7 0, transparent 55%),
-                  #020617;
-      background-attachment: fixed;
-      overflow-x: hidden;
+      padding: 16px;
     }
 
-    /* Particle background behind everything */
-    #particles-js {
+    /* animated gradient overlay */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -50%;
+      background: conic-gradient(
+        from 180deg,
+        rgba(127, 93, 255, 0.32),
+        rgba(255, 139, 213, 0.1),
+        rgba(0, 238, 255, 0.18),
+        rgba(127, 93, 255, 0.32)
+      );
+      animation: spin 22s linear infinite;
+      opacity: 0.4;
+      filter: blur(90px);
+      z-index: -2;
+    }
+
+    /* soft particle dots */
+    body::after {
+      content: "";
       position: fixed;
       inset: 0;
+      background-image:
+        radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.12) 0, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08) 0, transparent 55%),
+        radial-gradient(circle at 40% 60%, rgba(127, 93, 255, 0.2) 0, transparent 50%);
+      mix-blend-mode: screen;
+      opacity: 0.35;
+      pointer-events: none;
       z-index: -1;
     }
 
-    @keyframes cardFloat {
-      0%   { transform: translateY(0px); }
-      50%  { transform: translateY(-4px); }
-      100% { transform: translateY(0px); }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
-    @keyframes glowPulse {
-      0%   { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.3); }
-      70%  { box-shadow: 0 0 25px 6px rgba(56, 189, 248, 0.05); }
-      100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
-    }
-
-    .app-shell {
+    .app {
       width: 100%;
-      max-width: 960px;
-      position: relative;
-      z-index: 1;
+      max-width: 900px;
+      background: linear-gradient(145deg, rgba(9, 11, 40, 0.96), rgba(10, 7, 40, 0.96));
+      border-radius: 24px;
+      box-shadow: var(--shadow-soft);
+      padding: 18px 16px 22px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(18px);
     }
 
-    .header-banner {
-      background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,64,175,0.9));
-      border-radius: 20px;
-      padding: 18px 18px 16px;
-      margin-bottom: 18px;
-      border: 1px solid rgba(148,163,184,0.4);
-      backdrop-filter: blur(10px);
-      position: relative;
-      overflow: hidden;
-      animation: glowPulse 3s infinite;
+    @media (min-width: 768px) {
+      .app {
+        padding: 22px 26px 26px;
+        margin-top: 18px;
+      }
     }
 
-    .header-banner::before {
-      content: "";
-      position: absolute;
-      inset: -40%;
-      background:
-        radial-gradient(circle at 0 0, rgba(56,189,248,0.22), transparent 58%),
-        radial-gradient(circle at 100% 100%, rgba(244,114,182,0.25), transparent 55%);
-      opacity: 0.7;
-      pointer-events: none;
-    }
-
-    .header-inner {
-      position: relative;
-      z-index: 1;
+    .header {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 12px;
       justify-content: space-between;
-    }
-
-    .header-main {
-      max-width: 520px;
-    }
-
-    .app-title {
-      margin: 0;
-      font-size: 1.9rem;
-      letter-spacing: 0.03em;
-      display: flex;
+      gap: 12px;
       align-items: center;
-      gap: 0.4rem;
+      margin-bottom: 16px;
     }
 
-    .app-title span.highlight {
-      background: linear-gradient(135deg, #38bdf8, #a855f7);
-      -webkit-background-clip: text;
-      color: transparent;
-      font-weight: 800;
+    .title-block {
+      flex: 1;
     }
 
-    .app-subtitle {
-      margin-top: 4px;
-      font-size: 0.9rem;
-      color: #cbd5f5;
-    }
-
-    .chip-row {
+    .badge-row {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      margin-top: 8px;
+      margin-bottom: 6px;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(127, 93, 255, 0.9);
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      letter-spacing: 0.02em;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 span.spark {
+      font-size: 1.2rem;
+      color: var(--accent-strong);
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      max-width: 340px;
+    }
+
+    .profile-tag {
+      text-align: right;
+      font-size: 0.75rem;
+      color: var(--text-soft);
+    }
+
+    .profile-tag strong {
+      color: var(--accent-strong);
     }
 
     .chip {
-      font-size: 0.72rem;
-      padding: 4px 11px;
+      display: inline-block;
+      margin-top: 4px;
+      padding: 3px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.7);
-      background: rgba(15,23,42,0.65);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .chip-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #38bdf8;
-    }
-
-    .header-side {
-      text-align: right;
-      font-size: 0.8rem;
-      color: #e5e7eb;
-    }
-
-    .header-side .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 11px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.7);
-      background: rgba(15,23,42,0.8);
-      font-size: 0.75rem;
-      margin-bottom: 4px;
-    }
-
-    .header-side .small-label {
       font-size: 0.7rem;
-      color: #9ca3af;
-    }
-
-    .app-container {
-      background: rgba(15,23,42,0.98);
-      border-radius: 20px;
-      padding: 18px 16px 14px;
-      box-shadow: 0 20px 45px rgba(15,23,42,0.85);
-      border: 1px solid rgba(30,64,175,0.85);
-      backdrop-filter: blur(18px);
-      animation: cardFloat 8s ease-in-out infinite;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(120deg, rgba(127, 93, 255, 0.32), rgba(0, 0, 0, 0.2));
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
+      gap: 14px;
+    }
+
+    @media (min-width: 768px) {
+      .grid-2 {
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.1fr);
+        align-items: flex-start;
+      }
     }
 
     .card {
-      background: radial-gradient(circle at top left, rgba(56,189,248,0.06), transparent 55%),
-                  radial-gradient(circle at bottom right, rgba(168,85,247,0.06), transparent 55%),
-                  #020617;
-      border-radius: 14px;
-      border: 1px solid #1f2937;
-      padding: 14px;
-      margin-bottom: 14px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-3px);
-      border-color: rgba(56,189,248,0.8);
-      box-shadow: 0 18px 30px rgba(15,23,42,0.9);
-      background: radial-gradient(circle at top left, rgba(56,189,248,0.15), transparent 55%),
-                  radial-gradient(circle at bottom right, rgba(168,85,247,0.16), transparent 55%),
-                  #020617;
-    }
-
-    label {
-      font-size: 0.85rem;
-      color: #d1d5db;
-      margin-bottom: 4px;
-      display: block;
-    }
-
-    input, button {
-      border-radius: 999px;
-      border: 1px solid #374151;
-      padding: 8px 12px;
-      width: 100%;
-      background: rgba(15,23,42,0.9);
-      color: #e5e7eb;
-      font-size: 0.9rem;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, transform 0.08s ease;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 1px rgba(56,189,248,0.65);
-      background: #020617;
-    }
-
-    button {
-      cursor: pointer;
-      font-weight: 600;
-      border-radius: 999px;
-      border: none;
-      background-image: linear-gradient(135deg, #38bdf8, #a855f7);
-      color: #0b1120;
-      letter-spacing: 0.02em;
-      box-shadow: 0 12px 26px rgba(56,189,248,0.45);
+      background: radial-gradient(circle at top left, rgba(127, 93, 255, 0.2), rgba(9, 11, 40, 0.98));
+      border-radius: var(--radius-xl);
+      padding: 14px 13px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
       position: relative;
       overflow: hidden;
     }
 
-    button::before {
+    .card::before {
       content: "";
       position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 0 0, rgba(255,255,255,0.35), transparent 55%);
-      opacity: 0;
-      transition: opacity 0.2s ease;
+      inset: -40%;
+      background: radial-gradient(circle at 10% 0%, rgba(127, 93, 255, 0.25) 0, transparent 55%);
+      opacity: 0.7;
       pointer-events: none;
     }
 
-    button:hover::before {
-      opacity: 1;
+    .card > * {
+      position: relative;
+      z-index: 1;
     }
 
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 16px 32px rgba(56,189,248,0.6);
+    .card h2 {
+      font-size: 0.98rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    button:active {
-      transform: translateY(0);
-      box-shadow: 0 8px 18px rgba(15,23,42,0.9);
+    .card h2 span.icon {
+      display: inline-flex;
+      width: 18px;
+      height: 18px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: rgba(127, 93, 255, 0.2);
+      font-size: 0.8rem;
     }
 
-    .btn-secondary {
-      background-image: none;
-      background: rgba(15,23,42,0.96);
-      border: 1px solid #4b5563;
-      color: #e5e7eb;
-      box-shadow: 0 8px 18px rgba(15,23,42,0.9);
+    label {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      margin-bottom: 3px;
+      display: block;
     }
 
-    .btn-secondary::before {
-      display: none;
+    input {
+      width: 100%;
+      background: rgba(5, 7, 28, 0.96);
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 8px 10px;
+      color: var(--text);
+      font-size: 0.82rem;
+      outline: none;
+      transition: border 0.18s ease, box-shadow 0.18s ease, transform 0.08s ease;
     }
 
-    .btn-secondary:hover {
-      background: #020617;
-      border-color: #6b7280;
-      transform: translateY(-1px);
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(127, 93, 255, 0.5);
+      transform: translateY(-0.5px);
+    }
+
+    input::placeholder {
+      color: rgba(197, 201, 255, 0.5);
+      font-size: 0.8rem;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .field {
+      margin-bottom: 8px;
+    }
+
+    .subject-list-head {
+      font-size: 0.76rem;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+
+    .subject-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) repeat(3, 0.7fr) 0.45fr;
+      gap: 6px;
+      margin-bottom: 6px;
+      align-items: center;
+    }
+
+    @media (max-width: 600px) {
+      .subject-row {
+        grid-template-columns: minmax(0, 1.3fr) repeat(3, 0.6fr) 0.6fr;
+      }
+    }
+
+    .pill-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(197, 201, 255, 0.8);
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(130deg, var(--accent), var(--accent-strong));
+      color: #050316;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+    }
+
+    .btn-ghost {
+      background: rgba(5, 7, 28, 0.96);
+      color: var(--text-soft);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .btn-sm {
+      padding: 5px 8px;
+      font-size: 0.7rem;
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+      filter: brightness(0.97);
+    }
+
+    .btn span.icon {
+      font-size: 0.9rem;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .hint {
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      opacity: 0.9;
+    }
+
+    .hint b {
+      color: var(--accent-strong);
+    }
+
+    .summary-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 0.72rem;
+    }
+
+    .summary-chip {
+      background: rgba(5, 7, 28, 0.96);
+      border-radius: 999px;
+      padding: 4px 9px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-soft);
+    }
+
+    .summary-chip b {
+      color: var(--text);
+    }
+
+    .priority-legend {
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      margin-bottom: 6px;
+    }
+
+    .priority-legend b {
+      color: var(--accent-strong);
+    }
+
+    .plan-output {
+      max-height: 290px;
+      overflow-y: auto;
+      padding-right: 4px;
+      margin-top: 6px;
+    }
+
+    .plan-output::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .plan-output::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 8px;
-      font-size: 0.83rem;
+      font-size: 0.75rem;
     }
 
     th, td {
-      padding: 6px 8px;
+      padding: 6px 6px;
       text-align: left;
-      border-bottom: 1px solid #111827;
     }
 
     th {
-      font-weight: 600;
-      color: #9ca3af;
-      background: rgba(15,23,42,0.9);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-soft);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      position: sticky;
+      top: 0;
+      background: rgba(7, 9, 32, 0.96);
+      backdrop-filter: blur(10px);
+      z-index: 2;
     }
 
-    .section-title {
-      font-size: 1rem;
-      margin-bottom: 4px;
-      color: #e5e7eb;
+    tbody tr:nth-child(odd) {
+      background: rgba(5, 7, 28, 0.7);
     }
 
-    .section-subtitle {
-      font-size: 0.8rem;
-      color: #9ca3af;
-      margin-bottom: 8px;
+    tbody tr:nth-child(even) {
+      background: rgba(8, 10, 35, 0.7);
     }
 
-    .tag {
+    td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .subject-pill {
       display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #020617;
-      color: #9ca3af;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      background: rgba(127, 93, 255, 0.16);
       border-radius: 999px;
-      padding: 4px 10px;
-      font-size: 0.75rem;
-      margin-right: 6px;
-      border: 1px solid #1f2937;
+      padding: 3px 8px;
+      font-size: 0.72rem;
     }
 
-    .tag-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #38bdf8;
-    }
-
-    .results {
-      margin-top: 6px;
+    .muted {
+      font-size: 0.72rem;
+      color: var(--text-soft);
+      opacity: 0.8;
     }
 
     .error {
-      color: #fed7d7;
-      font-size: 0.85rem;
-      margin-top: 8px;
-      background: rgba(127,29,29,0.35);
-      border-radius: 999px;
-      padding: 6px 12px;
-      border: 1px solid rgba(248,113,113,0.8);
+      color: var(--danger);
+      font-size: 0.72rem;
+      margin-top: 4px;
     }
 
-    .day-block {
-      margin-bottom: 10px;
-      background: radial-gradient(circle at top, rgba(56,189,248,0.08), transparent 65%),
-                  #020617;
-      border-radius: 12px;
-      border: 1px solid #1f2937;
-      padding: 8px 10px;
-      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .day-block:hover {
-      transform: translateY(-2px);
-      border-color: rgba(56,189,248,0.7);
-      box-shadow: 0 10px 20px rgba(15,23,42,0.85);
-    }
-
-    .day-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-      color: #e5e7eb;
-    }
-
-    .footer-note {
+    .footer {
       margin-top: 12px;
-      font-size: 0.78rem;
-      color: #9ca3af;
-      text-align: center;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.15);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.68rem;
+      color: var(--text-soft);
     }
 
-    .footer-note span.name {
-      font-weight: 600;
-      color: #e5e7eb;
+    .footer a {
+      color: var(--accent-strong);
+      text-decoration: none;
     }
 
-    .footer-note span.college {
-      color: #a5b4fc;
-      font-weight: 600;
-    }
-
-    @media (max-width: 640px) {
-      body {
-        padding: 14px 8px;
-      }
-
-      .header-banner {
-        padding: 14px 12px;
-      }
-
-      .app-container {
-        padding: 14px 12px;
-      }
-
-      .header-inner {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .header-side {
-        text-align: left;
-      }
+    .footer a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <!-- particle canvas -->
-  <div id="particles-js"></div>
-
-  <div class="app-shell">
-    <!-- HEADER -->
-    <header class="header-banner">
-      <div class="header-inner">
-        <div class="header-main">
-          <h1 class="app-title">
-            Study Planner <span class="highlight">AI</span>
-          </h1>
-          <p class="app-subtitle">
-            Turn your exam tension into a clear, balanced timetable.  
-            Smart distribution of hours based on difficulty, weakness and importance.
-          </p>
-          <div class="chip-row">
-            <div class="chip">
-              <span class="chip-dot"></span>
-              HTML · CSS · JavaScript
-            </div>
-            <div class="chip">
-              <span class="chip-dot"></span>
-              Heuristic AI Logic
-            </div>
-            <div class="chip">
-              <span class="chip-dot"></span>
-              Built on Mobile
-            </div>
+  <main class="app">
+    <header class="header">
+      <div class="title-block">
+        <div class="badge-row">
+          <div class="badge">
+            <span class="badge-dot"></span> Study Planner AI
           </div>
+          <div class="badge">HTML · CSS · JavaScript</div>
+          <div class="badge">Heuristic logic • Mobile first</div>
         </div>
-        <div class="header-side">
-          <div class="pill">
-            <span>📚 Exam Mode</span>
-          </div>
-          <div class="small-label">
-            Adjust hours, add subjects,<br />
-            tap generate & follow the plan.
-          </div>
-        </div>
+        <h1>
+          Exam Mode ON
+          <span class="spark">⚡</span>
+        </h1>
+        <p class="subtitle">
+          Turn your exam tension into a clear timetable. I will distribute your
+          hours based on <b>difficulty</b>, <b>weakness</b>, and <b>importance</b>.
+        </p>
+      </div>
+      <div class="profile-tag">
+        Crafted by<br />
+        <strong>Siva Sai</strong> · NEC
+        <div class="chip">Built & deployed from mobile 📱</div>
       </div>
     </header>
 
-    <!-- MAIN APP -->
-    <main class="app-container">
-      <div class="card">
-        <div class="grid">
-          <div>
-            <label for="daysLeft">Days left for exam(s)</label>
-            <input type="number" id="daysLeft" min="1" max="365" placeholder="e.g., 10" />
+    <div class="grid grid-2">
+      <!-- Left: Inputs -->
+      <section class="card">
+        <h2>
+          <span class="icon">🧠</span>
+          Exam Details
+        </h2>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="daysLeft">Days left for exam</label>
+            <input
+              type="number"
+              id="daysLeft"
+              min="1"
+              placeholder="e.g., 5"
+            />
           </div>
-          <div>
+          <div class="field">
             <label for="hoursPerDay">Hours you can study per day</label>
-            <input type="number" id="hoursPerDay" min="1" step="0.5" placeholder="e.g., 4.5" />
+            <input
+              type="number"
+              id="hoursPerDay"
+              min="1"
+              step="0.5"
+              placeholder="e.g., 6"
+            />
           </div>
         </div>
 
-        <div class="section-title">Subjects</div>
-        <div class="section-subtitle">
-          Add each subject and rate <strong>difficulty</strong>, <strong>your weakness</strong>, and <strong>exam importance</strong> (1 = low, 5 = high).
+        <h2 style="margin-top: 8px;">
+          <span class="icon">📚</span>
+          Subjects
+        </h2>
+        <p class="subject-list-head">
+          Add each subject and give rating from <b>1 (low)</b> to <b>5 (high)</b>.
+        </p>
+
+        <div id="subjectsContainer"></div>
+
+        <div class="btn-row">
+          <button id="addSubjectBtn" class="btn btn-ghost">
+            <span class="icon">＋</span>
+            Add Subject
+          </button>
+          <span class="hint">
+            Tip: Keep <b>weak subjects</b> weakness rating high so I can protect you there.
+          </span>
         </div>
 
-        <div style="margin-bottom: 8px;">
-          <button id="addSubjectBtn" class="btn-secondary" type="button">+ Add Subject</button>
+        <p id="errorBox" class="error" style="display: none;"></p>
+
+        <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+          <button id="generateBtn" class="btn btn-primary">
+            <span class="icon">✨</span>
+            Generate Study Plan
+          </button>
+        </div>
+      </section>
+
+      <!-- Right: Output -->
+      <section class="card">
+        <h2>
+          <span class="icon">📅</span>
+          Plan Summary & Day-wise Plan
+        </h2>
+
+        <div class="summary-chip-row" id="summaryChips">
+          <div class="summary-chip">
+            Days: <b>–</b>
+          </div>
+          <div class="summary-chip">
+            Hrs/Day: <b>–</b>
+          </div>
+          <div class="summary-chip">
+            Subjects: <b>–</b>
+          </div>
+          <div class="summary-chip">
+            Total Hours: <b>–</b>
+          </div>
         </div>
 
-        <div id="subjectsContainer">
-          <table id="subjectsTable">
-            <thead>
-              <tr>
-                <th>Subject</th>
-                <th>Difficulty (1–5)</th>
-                <th>Weakness (1–5)</th>
-                <th>Importance (1–5)</th>
-                <th>Remove</th>
-              </tr>
-            </thead>
-            <tbody id="subjectsBody"></tbody>
-          </table>
-        </div>
-
-        <div style="margin-top: 14px; text-align: right;">
-          <button id="generateBtn" type="button">Generate Study Plan</button>
-        </div>
-        <div id="errorBox" class="error" style="display:none;"></div>
-      </div>
-
-      <div class="card results">
-        <div class="section-title">Plan Summary</div>
-        <div class="section-subtitle">
+        <p class="priority-legend">
           Weighted priority:
-          <span class="tag"><span class="tag-dot"></span>40% Difficulty</span>
-          <span class="tag"><span class="tag-dot"></span>40% Weakness</span>
-          <span class="tag"><span class="tag-dot"></span>20% Importance</span>
-        </div>
-        <div id="summaryArea"></div>
-      </div>
+          <b>40% Difficulty · 40% Weakness · 20% Importance</b><br />
+          Same pattern repeats every day for simplicity. You can reshuffle manually.
+        </p>
 
-      <div class="card results">
-        <div class="section-title">Day-wise Plan</div>
-        <div class="section-subtitle">
-          Same distribution each day for simplicity. You can reshuffle subjects manually if needed.
+        <div class="plan-output" id="planOutput">
+          <p class="muted">
+            Hi, I'm your mini Jarvis for exams. Add subjects on the left and tap
+            <b>Generate Study Plan</b>. I'll prepare a clean day-wise table here. 💫
+          </p>
         </div>
-        <div id="dayPlanArea"></div>
-      </div>
+      </section>
+    </div>
 
-      <p class="footer-note">
-        Crafted with focus by <span class="name">Siva Sai</span> ·
-        <span class="college">NEC</span>
-      </p>
-    </main>
-  </div>
+    <footer class="footer">
+      <span>
+        Logic tuned for <b>last-minute exam prep</b>.
+      </span>
+      <span>
+        Built by <b>Siva Sai</b> · Hosted on GitHub Pages
+      </span>
+    </footer>
+  </main>
 
   <script>
+    const subjectsContainer = document.getElementById("subjectsContainer");
+    const addSubjectBtn = document.getElementById("addSubjectBtn");
+    const generateBtn = document.getElementById("generateBtn");
+    const errorBox = document.getElementById("errorBox");
+    const summaryChips = document.getElementById("summaryChips");
+    const planOutput = document.getElementById("planOutput");
+
+    function createSubjectRow(initialName = "") {
+      const row = document.createElement("div");
+      row.className = "subject-row";
+
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.placeholder = "Subject name (e.g., Java)";
+      nameInput.value = initialName;
+
+      const diffInput = document.createElement("input");
+      diffInput.type = "number";
+      diffInput.min = "1";
+      diffInput.max = "5";
+      diffInput.placeholder = "D";
+
+      const weakInput = document.createElement("input");
+      weakInput.type = "number";
+      weakInput.min = "1";
+      weakInput.max = "5";
+      weakInput.placeholder = "W";
+
+      const impInput = document.createElement("input");
+      impInput.type = "number";
+      impInput.min = "1";
+      impInput.max = "5";
+      impInput.placeholder = "I";
+
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "btn btn-ghost btn-sm";
+      removeBtn.type = "button";
+      removeBtn.innerHTML = '<span class="icon">✕</span>';
+
+      removeBtn.addEventListener("click", () => {
+        row.remove();
+      });
+
+      row.appendChild(nameInput);
+      row.appendChild(diffInput);
+      row.appendChild(weakInput);
+      row.appendChild(impInput);
+      row.appendChild(removeBtn);
+
+      subjectsContainer.appendChild(row);
+    }
+
+    // Initialize with a few rows
+    createSubjectRow("Java");
+    createSubjectRow("ADS");
+    createSubjectRow("AI");
+
+    addSubjectBtn.addEventListener("click", () => {
+      createSubjectRow();
+    });
+
     function showError(message) {
-      const box = document.getElementById("errorBox");
-      box.textContent = message;
-      box.style.display = "block";
+      errorBox.textContent = message;
+      errorBox.style.display = "block";
     }
 
     function clearError() {
-      const box = document.getElementById("errorBox");
-      box.textContent = "";
-      box.style.display = "none";
+      errorBox.textContent = "";
+      errorBox.style.display = "none";
     }
 
-    function createSubjectRow(nameValue = "") {
-      const tbody = document.getElementById("subjectsBody");
-      const tr = document.createElement("tr");
+    function updateSummary(days, hoursPerDay, subjectsCount) {
+      const totalHours = days && hoursPerDay ? (days * hoursPerDay).toFixed(1) : "–";
 
-      tr.innerHTML = `
-        <td>
-          <input type="text" class="sub-name" placeholder="e.g., Java, ADA" value="${nameValue}" />
-        </td>
-        <td>
-          <input type="number" class="sub-difficulty" min="1" max="5" placeholder="3" />
-        </td>
-        <td>
-          <input type="number" class="sub-weakness" min="1" max="5" placeholder="4" />
-        </td>
-        <td>
-          <input type="number" class="sub-importance" min="1" max="5" placeholder="3" />
-        </td>
-        <td>
-          <button type="button" class="btn-secondary btn-remove">✕</button>
-        </td>
+      summaryChips.innerHTML = `
+        <div class="summary-chip">Days: <b>${days || "–"}</b></div>
+        <div class="summary-chip">Hrs/Day: <b>${hoursPerDay || "–"}</b></div>
+        <div class="summary-chip">Subjects: <b>${subjectsCount || "–"}</b></div>
+        <div class="summary-chip">Total Hours: <b>${subjectsCount ? totalHours : "–"}</b></div>
       `;
-
-      tbody.appendChild(tr);
-      tr.querySelector(".btn-remove").addEventListener("click", () => tr.remove());
     }
 
-    function getSubjectsFromTable() {
-      const rows = document.querySelectorAll("#subjectsBody tr");
-      const subjects = [];
+    function generatePlan() {
+      clearError();
 
-      rows.forEach((row, index) => {
-        const nameInput = row.querySelector(".sub-name");
-        const diffInput = row.querySelector(".sub-difficulty");
-        const weakInput = row.querySelector(".sub-weakness");
-        const impInput = row.querySelector(".sub-importance");
+      const daysLeft = parseInt(document.getElementById("daysLeft").value, 10);
+      const hoursPerDay = parseFloat(document.getElementById("hoursPerDay").value);
 
-        const rawName = (nameInput.value || "").trim();
-        const name = rawName || `Subject ${index + 1}`;
-        const difficulty = Number(diffInput.value);
-        const weakness = Number(weakInput.value);
-        const importance = Number(impInput.value);
-
-        subjects.push({ name, difficulty, weakness, importance });
-      });
-
-      return subjects;
-    }
-
-    function computePriorities(subjects) {
-      subjects.forEach((s) => {
-        s.priority = 0.4 * s.difficulty + 0.4 * s.weakness + 0.2 * s.importance;
-      });
-    }
-
-    function distributeHours(subjects, daysLeft, hoursPerDay) {
-      const totalHours = daysLeft * hoursPerDay;
-      const totalPriority = subjects.reduce((sum, s) => sum + s.priority, 0);
-      if (!totalPriority) return;
-
-      subjects.forEach((s) => {
-        const share = s.priority / totalPriority;
-        s.totalHours = Math.round(totalHours * share * 10) / 10;
-        s.hoursPerDay = Math.round((s.totalHours / daysLeft) * 10) / 10;
-      });
-    }
-
-    function renderSummary(subjects, daysLeft, hoursPerDay) {
-      const summaryArea = document.getElementById("summaryArea");
-      if (!subjects.length) {
-        summaryArea.innerHTML =
-          "<p style='font-size:0.85rem;color:#6b7280;'>No subjects yet. Add at least one subject to see the summary.</p>";
+      if (!daysLeft || daysLeft <= 0) {
+        showError("Please enter how many days are left for your exam.");
+        return;
+      }
+      if (!hoursPerDay || hoursPerDay <= 0) {
+        showError("Please enter how many hours you can study per day.");
         return;
       }
 
-      const totalHours = daysLeft * hoursPerDay;
+      const rows = Array.from(subjectsContainer.getElementsByClassName("subject-row"));
+
+      if (rows.length === 0) {
+        showError("Add at least one subject before generating the plan.");
+        return;
+      }
+
+      const subjects = [];
+
+      for (const row of rows) {
+        const [nameInput, diffInput, weakInput, impInput] = row.querySelectorAll("input");
+
+        const name = nameInput.value.trim();
+        const d = parseInt(diffInput.value, 10);
+        const w = parseInt(weakInput.value, 10);
+        const i = parseInt(impInput.value, 10);
+
+        if (!name) {
+          showError("One of the subject names is empty. Please fill it.");
+          return;
+        }
+
+        if (
+          !d || !w || !i ||
+          d < 1 || d > 5 ||
+          w < 1 || w > 5 ||
+          i < 1 || i > 5
+        ) {
+          showError(
+            "For each subject, difficulty, weakness, and importance must be between 1 and 5."
+          );
+          return;
+        }
+
+        const weight = d * 0.4 + w * 0.4 + i * 0.2;
+        subjects.push({ name, d, w, i, weight });
+      }
+
+      const totalWeight = subjects.reduce((sum, s) => sum + s.weight, 0);
+      if (totalWeight <= 0) {
+        showError("Weights add up to zero. Please adjust your ratings.");
+        return;
+      }
+
+      // Update summary
+      updateSummary(daysLeft, hoursPerDay, subjects.length);
+
+      // Compute hours per subject per day
+      subjects.forEach((s) => {
+        s.hoursPerDay = (s.weight / totalWeight) * hoursPerDay;
+      });
+
+      // Build table HTML
       let html = `
-        <p style="font-size:0.85rem;color:#9ca3af;margin-bottom:8px;">
-          Days left: <strong>${daysLeft}</strong> · Hours per day: <strong>${hoursPerDay}</strong> · Total study hours: <strong>${totalHours.toFixed(
-            1
-          )}</strong>
-        </p>
         <table>
           <thead>
             <tr>
+              <th>Day</th>
               <th>Subject</th>
-              <th>Priority</th>
-              <th>Total Hours</th>
-              <th>Hours / Day</th>
+              <th>Hrs</th>
+              <th>Profile</th>
             </tr>
           </thead>
           <tbody>
       `;
 
-      subjects.forEach((s) => {
-        html += `
-          <tr>
-            <td>${s.name}</td>
-            <td>${s.priority.toFixed(2)}</td>
-            <td>${(s.totalHours || 0).toFixed(1)}</td>
-            <td>${(s.hoursPerDay || 0).toFixed(1)}</td>
-          </tr>
-        `;
-      });
+      for (let day = 1; day <= daysLeft; day++) {
+        subjects.forEach((s, index) => {
+          const hours = s.hoursPerDay.toFixed(2);
+          const profileText = `D${s.d} · W${s.w} · I${s.i}`;
+          html += `
+            <tr>
+              <td>${index === 0 ? "Day " + day : ""}</td>
+              <td><span class="subject-pill">${s.name}</span></td>
+              <td>${hours}</td>
+              <td>${profileText}</td>
+            </tr>
+          `;
+        });
+      }
 
       html += "</tbody></table>";
-      summaryArea.innerHTML = html;
+
+      planOutput.innerHTML = html;
     }
 
-    function renderDayPlan(subjects, daysLeft) {
-      const dayPlanArea = document.getElementById("dayPlanArea");
-      if (!subjects.length || !daysLeft) {
-        dayPlanArea.innerHTML =
-          "<p style='font-size:0.85rem;color:#6b7280;'>Generate a plan to see day-wise schedule.</p>";
-        return;
-      }
-
-      let html = "";
-      for (let day = 1; day <= daysLeft; day++) {
-        html += `<div class="day-block"><div class="day-title">Day ${day}</div>`;
-        subjects.forEach((s) => {
-          if (s.hoursPerDay > 0) {
-            html += `<div style="font-size:0.85rem;color:#d1d5db;">• ${s.name}: <strong>${s.hoursPerDay.toFixed(
-              1
-            )}</strong> hour(s)</div>`;
-          }
-        });
-        html += "</div>";
-      }
-      dayPlanArea.innerHTML = html;
-    }
-
-    function generatePlan() {
-      clearError();
-      const daysLeft = Number(document.getElementById("daysLeft").value);
-      const hoursPerDay = Number(document.getElementById("hoursPerDay").value);
-
-      if (!daysLeft || daysLeft <= 0) return showError("Please enter a valid number of days left (at least 1).");
-      if (!hoursPerDay || hoursPerDay <= 0) return showError("Please enter hours per day (greater than 0).");
-
-      const subjects = getSubjectsFromTable();
-      if (!subjects.length) return showError("Please add at least one subject.");
-
-      for (const s of subjects) {
-        if (
-          !s.difficulty || s.difficulty < 1 || s.difficulty > 5 ||
-          !s.weakness || s.weakness < 1 || s.weakness > 5 ||
-          !s.importance || s.importance < 1 || s.importance > 5
-        ) {
-          return showError("All ratings must be between 1 and 5 for every subject.");
-        }
-      }
-
-      computePriorities(subjects);
-      distributeHours(subjects, daysLeft, hoursPerDay);
-      renderSummary(subjects, daysLeft, hoursPerDay);
-      renderDayPlan(subjects, daysLeft);
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      createSubjectRow("Java");
-      createSubjectRow("ADA");
-      createSubjectRow("AI");
-      document.getElementById("addSubjectBtn").onclick = () => createSubjectRow("");
-      document.getElementById("generateBtn").onclick = generatePlan;
-      renderSummary([], 0, 0);
-      renderDayPlan([], 0);
-    });
-
-    // particles.js config
-    particlesJS("particles-js", {
-      particles: {
-        number: { value: 70, density: { enable: true, value_area: 900 } },
-        color: { value: "#38bdf8" },
-        shape: { type: "circle" },
-        opacity: { value: 0.4 },
-        size: { value: 3, random: true },
-        line_linked: {
-          enable: true,
-          distance: 150,
-          color: "#38bdf8",
-          opacity: 0.25,
-          width: 1
-        },
-        move: {
-          enable: true,
-          speed: 2,
-          direction: "none",
-          out_mode: "out"
-        }
-      },
-      interactivity: {
-        detect_on: "canvas",
-        events: {
-          onhover: { enable: true, mode: "repulse" },
-          onclick: { enable: false },
-          resize: true
-        },
-        modes: {
-          repulse: { distance: 100, duration: 0.4 }
-        }
-      },
-      retina_detect: true
-    });
+    generateBtn.addEventListener("click", generatePlan);
   </script>
 </body>
 </html>
