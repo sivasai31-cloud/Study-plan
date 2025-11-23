@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <title>Study Planner AI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Particles.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -21,9 +25,16 @@
                   radial-gradient(circle at bottom right, #a855f7 0, transparent 55%),
                   #020617;
       background-attachment: fixed;
+      overflow-x: hidden;
     }
 
-    /* Smooth fade + floating animation */
+    /* Particle background behind everything */
+    #particles-js {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+    }
+
     @keyframes cardFloat {
       0%   { transform: translateY(0px); }
       50%  { transform: translateY(-4px); }
@@ -39,6 +50,8 @@
     .app-shell {
       width: 100%;
       max-width: 960px;
+      position: relative;
+      z-index: 1;
     }
 
     .header-banner {
@@ -265,11 +278,6 @@
       transform: translateY(-1px);
     }
 
-    .btn-secondary:active {
-      transform: translateY(0);
-      box-shadow: none;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
@@ -400,8 +408,11 @@
   </style>
 </head>
 <body>
+  <!-- particle canvas -->
+  <div id="particles-js"></div>
+
   <div class="app-shell">
-    <!-- HEADER BANNER -->
+    <!-- HEADER -->
     <header class="header-banner">
       <div class="header-inner">
         <div class="header-main">
@@ -473,16 +484,14 @@
                 <th>Remove</th>
               </tr>
             </thead>
-            <tbody id="subjectsBody">
-              <!-- Subject rows injected by JS -->
-            </tbody>
+            <tbody id="subjectsBody"></tbody>
           </table>
         </div>
 
         <div style="margin-top: 14px; text-align: right;">
           <button id="generateBtn" type="button">Generate Study Plan</button>
         </div>
-        <div id="errorBox" class="error" style="display: none;"></div>
+        <div id="errorBox" class="error" style="display:none;"></div>
       </div>
 
       <div class="card results">
@@ -493,9 +502,7 @@
           <span class="tag"><span class="tag-dot"></span>40% Weakness</span>
           <span class="tag"><span class="tag-dot"></span>20% Importance</span>
         </div>
-        <div id="summaryArea">
-          <!-- Summary table goes here -->
-        </div>
+        <div id="summaryArea"></div>
       </div>
 
       <div class="card results">
@@ -503,20 +510,17 @@
         <div class="section-subtitle">
           Same distribution each day for simplicity. You can reshuffle subjects manually if needed.
         </div>
-        <div id="dayPlanArea">
-          <!-- Day-wise plan goes here -->
-        </div>
+        <div id="dayPlanArea"></div>
       </div>
 
       <p class="footer-note">
-        Crafted with focus by <span class="name">Bharadwaj</span> ·
+        Crafted with focus by <span class="name">Siva Sai</span> ·
         <span class="college">NEC</span>
       </p>
     </main>
   </div>
 
   <script>
-    // ---------- Utility Functions ----------
     function showError(message) {
       const box = document.getElementById("errorBox");
       box.textContent = message;
@@ -529,7 +533,6 @@
       box.style.display = "none";
     }
 
-    // ---------- Subject Row Handling ----------
     function createSubjectRow(nameValue = "") {
       const tbody = document.getElementById("subjectsBody");
       const tr = document.createElement("tr");
@@ -553,11 +556,7 @@
       `;
 
       tbody.appendChild(tr);
-
-      const removeBtn = tr.querySelector(".btn-remove");
-      removeBtn.addEventListener("click", () => {
-        tr.remove();
-      });
+      tr.querySelector(".btn-remove").addEventListener("click", () => tr.remove());
     }
 
     function getSubjectsFromTable() {
@@ -576,32 +575,22 @@
         const weakness = Number(weakInput.value);
         const importance = Number(impInput.value);
 
-        subjects.push({
-          name,
-          difficulty,
-          weakness,
-          importance
-        });
+        subjects.push({ name, difficulty, weakness, importance });
       });
 
       return subjects;
     }
 
-    // ---------- Core Logic ----------
     function computePriorities(subjects) {
       subjects.forEach((s) => {
-        const d = s.difficulty;
-        const w = s.weakness;
-        const imp = s.importance;
-        s.priority = 0.4 * d + 0.4 * w + 0.2 * imp;
+        s.priority = 0.4 * s.difficulty + 0.4 * s.weakness + 0.2 * s.importance;
       });
     }
 
     function distributeHours(subjects, daysLeft, hoursPerDay) {
       const totalHours = daysLeft * hoursPerDay;
       const totalPriority = subjects.reduce((sum, s) => sum + s.priority, 0);
-
-      if (totalPriority === 0) return;
+      if (!totalPriority) return;
 
       subjects.forEach((s) => {
         const share = s.priority / totalPriority;
@@ -610,18 +599,15 @@
       });
     }
 
-    // ---------- Rendering ----------
     function renderSummary(subjects, daysLeft, hoursPerDay) {
       const summaryArea = document.getElementById("summaryArea");
-
-      if (subjects.length === 0) {
+      if (!subjects.length) {
         summaryArea.innerHTML =
           "<p style='font-size:0.85rem;color:#6b7280;'>No subjects yet. Add at least one subject to see the summary.</p>";
         return;
       }
 
-      const totalHours = daysLeft * hoursPerDay || 0;
-
+      const totalHours = daysLeft * hoursPerDay;
       let html = `
         <p style="font-size:0.85rem;color:#9ca3af;margin-bottom:8px;">
           Days left: <strong>${daysLeft}</strong> · Hours per day: <strong>${hoursPerDay}</strong> · Total study hours: <strong>${totalHours.toFixed(
@@ -651,70 +637,43 @@
         `;
       });
 
-      html += `
-          </tbody>
-        </table>
-      `;
-
+      html += "</tbody></table>";
       summaryArea.innerHTML = html;
     }
 
     function renderDayPlan(subjects, daysLeft) {
       const dayPlanArea = document.getElementById("dayPlanArea");
-
-      if (subjects.length === 0 || !daysLeft) {
+      if (!subjects.length || !daysLeft) {
         dayPlanArea.innerHTML =
           "<p style='font-size:0.85rem;color:#6b7280;'>Generate a plan to see day-wise schedule.</p>";
         return;
       }
 
       let html = "";
-
       for (let day = 1; day <= daysLeft; day++) {
-        html += `<div class="day-block">
-          <div class="day-title">Day ${day}</div>
-        `;
-
+        html += `<div class="day-block"><div class="day-title">Day ${day}</div>`;
         subjects.forEach((s) => {
-          if (s.hoursPerDay && s.hoursPerDay > 0) {
+          if (s.hoursPerDay > 0) {
             html += `<div style="font-size:0.85rem;color:#d1d5db;">• ${s.name}: <strong>${s.hoursPerDay.toFixed(
               1
             )}</strong> hour(s)</div>`;
           }
         });
-
-        html += `</div>`;
+        html += "</div>";
       }
-
       dayPlanArea.innerHTML = html;
     }
 
-    // ---------- Main Button Handler ----------
     function generatePlan() {
       clearError();
+      const daysLeft = Number(document.getElementById("daysLeft").value);
+      const hoursPerDay = Number(document.getElementById("hoursPerDay").value);
 
-      const daysLeftInput = document.getElementById("daysLeft");
-      const hoursPerDayInput = document.getElementById("hoursPerDay");
-
-      const daysLeft = Number(daysLeftInput.value);
-      const hoursPerDay = Number(hoursPerDayInput.value);
-
-      if (!daysLeft || daysLeft <= 0) {
-        showError("Please enter a valid number of days left (at least 1).");
-        return;
-      }
-
-      if (!hoursPerDay || hoursPerDay <= 0) {
-        showError("Please enter how many hours you can study per day (greater than 0).");
-        return;
-      }
+      if (!daysLeft || daysLeft <= 0) return showError("Please enter a valid number of days left (at least 1).");
+      if (!hoursPerDay || hoursPerDay <= 0) return showError("Please enter hours per day (greater than 0).");
 
       const subjects = getSubjectsFromTable();
-
-      if (subjects.length === 0) {
-        showError("Please add at least one subject.");
-        return;
-      }
+      if (!subjects.length) return showError("Please add at least one subject.");
 
       for (const s of subjects) {
         if (
@@ -722,236 +681,61 @@
           !s.weakness || s.weakness < 1 || s.weakness > 5 ||
           !s.importance || s.importance < 1 || s.importance > 5
         ) {
-          showError(
-            "All ratings (difficulty, weakness, importance) must be between 1 and 5 for every subject."
-          );
-          return;
+          return showError("All ratings must be between 1 and 5 for every subject.");
         }
       }
 
       computePriorities(subjects);
       distributeHours(subjects, daysLeft, hoursPerDay);
-
       renderSummary(subjects, daysLeft, hoursPerDay);
       renderDayPlan(subjects, daysLeft);
     }
 
-    // ---------- Init ----------
     document.addEventListener("DOMContentLoaded", () => {
       createSubjectRow("Java");
       createSubjectRow("ADA");
       createSubjectRow("AI");
-
-      document.getElementById("addSubjectBtn").addEventListener("click", () => {
-        createSubjectRow("");
-      });
-
-      document.getElementById("generateBtn").addEventListener("click", generatePlan);
-
+      document.getElementById("addSubjectBtn").onclick = () => createSubjectRow("");
+      document.getElementById("generateBtn").onclick = generatePlan;
       renderSummary([], 0, 0);
       renderDayPlan([], 0);
+    });
+
+    // particles.js config
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 70, density: { enable: true, value_area: 900 } },
+        color: { value: "#38bdf8" },
+        shape: { type: "circle" },
+        opacity: { value: 0.4 },
+        size: { value: 3, random: true },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#38bdf8",
+          opacity: 0.25,
+          width: 1
+        },
+        move: {
+          enable: true,
+          speed: 2,
+          direction: "none",
+          out_mode: "out"
+        }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: { enable: true, mode: "repulse" },
+          onclick: { enable: false },
+          resize: true
+        },
+        modes: {
+          repulse: { distance: 100, duration: 0.4 }
+        }
+      },
+      retina_detect: true
     });
   </script>
 </body>
 </html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Study Planner AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- ⭐ Animated Background (Particles.js) ⭐ -->
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    body {
-      margin: 0;
-      overflow-x: hidden;
-      color: #e5e7eb;
-      background: #020617;
-    }
-
-    /* Background Canvas */
-    #particles-js {
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      top: 0;
-      left: 0;
-    }
-
-    @keyframes cardFloat {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-4px); }
-      100% { transform: translateY(0px); }
-    }
-
-    .app-shell {
-      width: 100%;
-      max-width: 960px;
-      margin: auto;
-      padding: 18px;
-    }
-
-    .header-banner {
-      background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,64,175,0.9));
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 18px;
-      border: 1px solid rgba(148,163,184,0.4);
-      backdrop-filter: blur(10px);
-      animation: cardFloat 8s infinite;
-    }
-
-    .app-title {
-      margin: 0;
-      font-size: 2rem;
-      font-weight: 800;
-    }
-
-    .app-title span {
-      background: linear-gradient(135deg, #38bdf8, #a855f7);
-      -webkit-background-clip: text;
-      color: transparent;
-    }
-
-    .app-subtitle {
-      margin: 6px 0;
-      color: #cbd5e1;
-      font-size: 0.9rem;
-    }
-
-    .card {
-      background: rgba(15,23,42,0.95);
-      border-radius: 20px;
-      padding: 18px;
-      border: 1px solid rgba(56,189,248,0.2);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
-      margin-bottom: 14px;
-      animation: cardFloat 8s infinite;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 4px;
-      color: #d1d5db;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 10px;
-      background: rgba(15,23,42,0.8);
-      border: 1px solid #374151;
-      color: white;
-    }
-
-    input:focus {
-      border-color: #38bdf8;
-      outline: none;
-    }
-
-    button {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 999px;
-      cursor: pointer;
-      font-weight: 700;
-      color: #0f172a;
-      background: linear-gradient(135deg, #38bdf8, #a855f7);
-      box-shadow: 0 10px 20px rgba(56,189,248,0.4);
-      transition: 0.2s;
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 26px rgba(56,189,248,0.5);
-    }
-
-    .btn-secondary {
-      background: rgba(15,23,42,0.95);
-      border: 1px solid #475569;
-      color: #e2e8f0;
-    }
-
-    table {
-      width: 100%;
-      margin-top: 10px;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-
-    th, td {
-      padding: 8px;
-      border-bottom: 1px solid #1e293b;
-      color: #e2e8f0;
-    }
-
-    .day-block {
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 12px;
-      background: rgba(30,41,59,0.8);
-      border: 1px solid #334155;
-    }
-
-    .footer-note {
-      text-align: center;
-      margin-top: 20px;
-      color: #cbd5e1;
-      font-size: 0.85rem;
-    }
-
-    .footer-note span {
-      font-weight: 700;
-    }
-  </style>
-</head>
-
-<body>
-  <!-- ⭐ Background Animation -->
-  <div id="particles-js"></div>
-
-  <div class="app-shell">
-
-    <!-- ⭐ HEADER -->
-    <header class="header-banner">
-      <h1 class="app-title">Study Planner <span>AI</span></h1>
-      <p class="app-subtitle">
-        Smartly distribute study hours based on difficulty, weakness & importance.
-      </p>
-    </header>
-
-    <!-- ⭐ MAIN APP -->
-    <main class="app-container">
-
-      <div class="card">
-        <label>Days left</label>
-        <input id="daysLeft" type="number" placeholder="e.g., 10">
-
-        <label style="margin-top:10px;">Hours per day</label>
-        <input id="hoursPerDay" type="number" step="0.5" placeholder="e.g., 4.5">
-
-        <button id="addSubjectBtn" class="btn-secondary" style="margin-top:10px;">+ Add Subject</button>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Subject</th>
-              <th>Difficulty</th>
-              <th>Weakness</th>
-              <th>Importance</th>
-              <th>Remove</th>
-            </tr>
-          </thead>
-          <tbody id="subjectsBody"></tbody>
-        </table>
-
-        <button id="generateBtn" style="margin
